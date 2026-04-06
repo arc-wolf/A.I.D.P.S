@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ device.ip if device else 'Device' }} - A.I.D.P.S{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-laptop-code text-primary me-3"></i>Device Details</h1>
+    <a href="{{ url_for('devices') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Devices
+    </a>
+</div>
+
+{% if device %}
+<div class="row">
+    <!-- Device Info Card -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Device Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><td><strong>IP Address:</strong></td><td><code>{{ device.ip }}</code></td></tr>
+                            <tr><td><strong>MAC:</strong></td><td>{{ device.mac or 'N/A' }}</td></tr>
+                            <tr><td><strong>Hostname:</strong></td><td>{{ device.hostname or 'Unknown' }}</td></tr>
+                            <tr>
+                                <td><strong>OS:</strong></td>
+                                <td>
+                                    {% if device.os_type == 'linux' %}
+                                        <span class="badge bg-success fs-6">Linux</span>
+                                    {% elif device.os_type == 'windows' %}
+                                        <span class="badge bg-warning fs-6">Windows</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary fs-6">{{ device.os_type }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>SSH:</strong></td>
+                                <td>
+                                    {% if device.ssh_enabled %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i> Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i> Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>WinRM:</strong></td>
+                                <td>
+                                    {% if device.winrm_enabled %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i> Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i> Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="badge bg-{{ 'success' if device.status == 'active' else 'warning' }}">{{ device.status }}</span></td></tr>
+                            <tr><td><strong>Last Seen:</strong></td><td>{{ device.last_seen }}</td></tr>
+                        </table>
+                        
+                        {% if not device.ssh_enabled and not device.winrm_enabled %}
+                        <button class="btn btn-primary mt-3" onclick="provisionDevice()">
+                            <i class="fas fa-magic me-1"></i>Enable Remote Access
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Software Inventory Card -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-boxes me-2"></i>Software Inventory</h6>
+            </div>
+            {% if software %}
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">
+                        {{ software.application_count }} apps • 
+                        {{ software.last_updated.strftime('%Y-%m-%d %H:%M') }}
+                    </small>
+                </div>
+                <div class="software-list" style="max-height: 400px; overflow-y: auto;">
+                    {% for app in software.applications[:20] %}
+                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom small">
+                        <span class="text-truncate" style="max-width: 70%;">{{ app.name }}</span>
+                        <small class="text-muted">{{ app.version }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if software.application_count > 20 %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">... and {{ software.application_count - 20 }} more</small>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="card-body text-center py-4">
+                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                <p class="text-muted">No software inventory</p>
+                <button class="btn btn-outline-primary btn-sm" onclick="collectInventory()">
+                    Collect Inventory
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    Device not found
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const ip = '{{ device.ip if device else "" }}';
+
+function provisionDevice() {
+    fetch(`/provision/${ip}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('Provisioning initiated!');
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+}
+
+function collectInventory() {
+    // Trigger inventory collection
+    alert('Inventory collection will be triggered by scheduler');
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - A.I.D.P.S{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-tachometer-alt text-primary me-3"></i>Dashboard</h1>
+    <div>
+        <button class="btn btn-primary me-2" onclick="openWorkflowWizard()">
+            <i class="fas fa-magic me-2"></i>Full Workflow
+        </button>
+        <button class="btn btn-success me-2" onclick="scanNetwork()">
+            <i class="fas fa-search me-2"></i>Quick Scan
+        </button>
+        <button class="btn btn-info" onclick="generateAnsible()">
+            <i class="fas fa-cogs me-2"></i>Ansible Inventory
+        </button>
+    </div>
+</div>
+
+<!-- Workflow Progress Bar -->
+<div id="workflow-progress-container" class="mb-4" style="display: none;">
+    <div class="progress" style="height: 8px;">
+        <div id="workflow-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+    </div>
+</div>
+
+<!-- Workflow Stepper -->
+<div class="card shadow mb-5">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Full System Workflow</h6>
+    </div>
+    <div class="card-body">
+        <div class="workflow-stepper">
+            <div class="workflow-step active" data-step="0">
+                <i class="fas fa-search"></i> 1. Scan Network
+            </div>
+            <div class="workflow-step" data-step="1">
+                <i class="fas fa-stethoscope"></i> 2. Detect Services
+            </div>
+            <div class="workflow-step" data-step="2">
+                <i class="fas fa-tools"></i> 3. Provision Access
+            </div>
+            <div class="workflow-step" data-step="3">
+                <i class="fas fa-file-export"></i> 4. Export & Ansible
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards (existing) -->
+<div class="row mb-5">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2" data-stat="total">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Devices</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.total }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-server fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Other stats cards unchanged -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active (24h)</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.active }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-circle fa-2x text-green-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Linux</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.os_distribution.linux or 0 }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fab fa-linux fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Windows</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.os_distribution.windows or 0 }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fab fa-windows fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Software (unchanged) -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Software Inventories</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_sw %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>IP</th><th>OS</th><th>Apps</th><th>Updated</th></tr></thead>
+                        <tbody>
+                            {% for inv in recent_sw %}
+                            <tr>
+                                <td>{{ inv.ip }}</td>
+                                <td><span class="badge bg-{{ 'success' if inv.os_type == 'linux' else 'warning' }}">{{ inv.os_type|upper }}</span></td>
+                                <td>{{ inv.application_count }}</td>
+                                <td>{{ inv.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No recent inventories. Run workflow!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Modal -->
+<div class="modal fade" id="workflowModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Full Workflow Wizard</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Guided workflow for complete system management. Click steps above to proceed!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

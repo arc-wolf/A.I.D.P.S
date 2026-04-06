@@ -1,0 +1,186 @@
+/* A.I.D.P.S Enhanced Custom Styles - UI Connectors */
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --workflow-blue: #0d6efd;
+    --workflow-success: #198754;
+}
+
+body {
+    background-color: #f8f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(33, 40, 50, 0.15);
+    border-radius: 0.75rem;
+}
+
+.card-header {
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    font-weight: 600;
+}
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.status-active { background-color: #d4edda !important; color: #155724; }
+.status-inactive { background-color: #f8d7da !important; color: #721c24; }
+
+.badge {
+    font-size: 0.75em;
+}
+
+.fa-circle {
+    color: #28a745;
+}
+
+.text-green-300 { color: #51cf66 !important; }
+
+.software-list {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85em;
+}
+
+/* ========== WORKFLOW STEPPER ========== */
+.workflow-stepper {
+    display: flex;
+    justify-content: space-between;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.workflow-step {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+    margin: 0 -1px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.workflow-step:not(.active):not(.completed):hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.workflow-step.active {
+    background: var(--workflow-blue);
+    color: white;
+    box-shadow: 0 4px 12px rgba(13,110,253,0.4);
+}
+
+.workflow-step.completed {
+    background: var(--workflow-success);
+    color: white;
+}
+
+.workflow-step i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.workflow-step::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.workflow-step:not(:first-child)::before {
+    left: 50%;
+}
+
+.workflow-step.active::before,
+.workflow-step.completed::before {
+    background: linear-gradient(to right, var(--workflow-success), var(--workflow-blue));
+}
+
+/* ========== BULK ACTIONS ========== */
+#bulk-actions .badge {
+    font-size: 0.75em;
+}
+
+.table input[type="checkbox"] {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* ========== PROGRESS BARS ========== */
+#workflow-progress,
+#global-workflow-progress .progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .workflow-stepper {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .workflow-step {
+        margin: 0;
+        border-radius: 0.5rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9em;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Loading spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Custom badges */
+.badge-success-custom { background-color: #28a745; }
+.badge-warning-custom { background-color: #ffc107; }
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,.075);
+}
+
+#global-search {
+    border-radius: 25px 0 0 25px;
+}
+
+.navbar form button {
+    border-radius: 0 25px 25px 0;
+}
