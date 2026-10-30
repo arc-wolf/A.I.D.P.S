@@ -1,123 +1,76 @@
-# A.I.D.P.S - Automated Infrastructure Discovery & Provisioning System
+# A.I.D.P.S. — Automated Infrastructure Discovery & Provisioning System
 
-## Overview
+A lab infrastructure management application for discovering devices on an authorized network, identifying remote-management services, maintaining an inventory, and preparing provisioning workflows.
 
-Enterprise-style lab infrastructure management platform for:
+## Features
 
-* Network discovery (ARP scanning)
-* Service detection (SSH/WinRM)
-* Remote management enablement
-* SQL inventory (SQLite)
-* Software tracking (MongoDB)
-* Automated provisioning (Ansible)
-* Web dashboard (Flask + Bootstrap)
-* Excel reports
-* Daily audits
+- Subnet discovery using ARP scanning (Scapy)
+- Service detection for SSH and WinRM
+- Device inventory in SQLite
+- Software inventory in MongoDB
+- Remote-management provisioning helpers for Linux and Windows
+- Ansible inventory generation
+- Scheduled audits
+- Flask dashboard and Excel export
 
 ## Architecture
 
 ```
 aidps/
-├── backend/         # Flask API + core logic
-├── core/            # Shared utilities
-├── frontend/        # HTML templates + static assets
-├── scheduler/       # Daily cron jobs
+├── backend/         # Flask-integrated discovery, detection, inventory, provisioning
+├── core/            # Configuration
+├── frontend/        # HTML templates and static assets
+├── scheduler/       # Scheduled audits
+├── tests/           # Automated tests
 ├── requirements.txt
 ├── main.py
 └── .env.example
 ```
 
-## Features
+## Setup
 
-- 🔍 Subnet scanning (scapy ARP)
-- 🧠 OS detection (port scanning)
-- 🔐 SSH/WinRM provisioning (paramiko)
-- 🗄️ SQL inventory (SQLite)
-- 📦 Software inventory (MongoDB)
-- ⏰ Scheduled scans
-- 📊 Bootstrap dashboard
-- 📥 Excel export
-- 🎛️ Ansible integration
-
-## 🚀 Quick Start
+1. Use this project only on networks and devices you own or are explicitly authorized to administer.
+2. Create and activate a virtual environment:
 
 ```bash
-cd A.I.D.P.S
-
-# 1. Setup virtual environment
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or: venv\\Scripts\\activate  # Windows
-
-# 2. Install dependencies
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+```
 
-# 3. Setup environment
+3. Configure environment variables:
+
+```bash
 cp .env.example .env
-# Edit .env with SCAN_SUBNET and credentials
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
-# 4. Start MongoDB
-docker-compose up -d mongodb
+Put the generated value in `SECRET_KEY`. Set a unique dashboard username and a strong password (at least 12 characters) using `AIDPS_ADMIN_USERNAME` and `AIDPS_ADMIN_PASSWORD`. Do not commit your real `.env` file.
 
-# 5. Run application
+4. Configure the target subnet and database connection details in `.env`. Start MongoDB if your software-inventory configuration requires it.
+5. Start the application:
+
+```bash
 python main.py
 ```
 
-**Access**: http://localhost:5000 (admin/admin)
+The dashboard listens on port 5000. There is **no built-in admin/admin account**; startup fails if the secret key or dashboard credentials are missing or too short.
 
-## 📱 Usage Guide
+## Security and operational notes
 
-1. **Login** → Dashboard
-2. **Scan Network** → Discover devices
-3. **View Devices** → Check services/status
-4. **Provision** → Enable SSH/WinRM
-5. **Export Excel** → Download reports
-6. **Ansible**: `/ansible/inventory` → Generate inventory.ini
+- Keep `.env` out of version control and restrict its filesystem permissions.
+- Use HTTPS when accessing the dashboard across a network. Set `SESSION_COOKIE_SECURE=true` when served over HTTPS.
+- Run behind a production WSGI server and a properly configured reverse proxy; do not use Flask's development server for production.
+- Use dedicated, least-privilege remote accounts. Avoid reusing personal or domain administrator credentials.
+- Restrict network scanning and provisioning to explicitly authorized subnets and devices.
+- Review the provisioning modules before running them: remote changes can alter SSH/WinRM settings on target machines.
+- The application should receive a security review before deployment outside a trusted lab.
 
-## 🧪 Testing
+## Testing
 
-```bash
-pip install -r requirements-dev.txt
-python -m pytest tests/
-```
-
-
-## Usage
-
-1. **Scan Network**: `/scan?subnet=192.168.1.0/24`
-2. **Dashboard**: `http://localhost:5000`
-3. **Export**: `/export/excel`
-
-## Development
+Install development dependencies if the repository provides them, then run its test suite:
 
 ```bash
-# Install deps
-pip install -r requirements-dev.txt
-
-# Run tests
 pytest
-
-# Lint
-flake8 .
 ```
-
-## Requirements
-
-- Python 3.10+
-- Docker (MongoDB)
-- Local lab network access
-- Root/admin for scapy
-
-## Security
-
-```
-.env stores credentials securely
-Basic auth on UI
-No hardcoded passwords
-Timeout handling
-```
-
----
-
-**Production-ready infrastructure management for lab environments**
 
